@@ -41,17 +41,15 @@ ChatterBox.prototype.roomDisplay = function() {
 
       // $('.rooms').append(Object.keys(room));
       var results = [];
+      results.push($('<option value="">Select a room</option>'));
       $(Object.keys(rooms)).each(function(i, room){
         // $('.rooms').append('<li>' + room + '</li>');
         room = that.sanatize(room);
-        results.push($('<li><a href="#" class="roomLink" data-roomname="' + room + '">' + room + '</a></li>'));
+        results.push($('<option value="' + room + '">' + room + '</option>'));
       });
       $('.rooms').html(results);
 
-      $('.roomLink').on('click', function(event) {
-        event.preventDefault();
-        that.room = $(this).data('roomname');
-      });
+
     }
   });
 };
@@ -91,6 +89,8 @@ ChatterBox.prototype.messageDisplay = function(messages) {
                   message.updatedAt +
                   '">' +
                   moment(message.updatedAt).startOf('hour').fromNow() +
+                  '</span><span class="messageRoomName"> ' +
+                  that.sanatize(message.roomname) +
                   '</span></div>'));
 
   });
@@ -102,25 +102,6 @@ ChatterBox.prototype.sanatize = function(string) {
   return $('<div></div>').text(string).html();
 };
 
-// Returns array of messages that aren't already displayed.
-// ChatterBox.prototype.compareTime = function(messages) {
-//   var oldMessage = $('.messages').find('.message')[0];
-//   var oldTimestamp = $(oldMessage).find('.timeStamp').data('timestamp');
-
-//   if(oldTimestamp === undefined) {
-//     return messages;
-//   } else {
-//     // compare timestamps
-//     for(var i = 0; i < messages.length; i++) {
-//       console.log('Comparing', moment(oldTimestamp).unix(), moment(messages[i].createdAt).unix());
-//       if(moment(oldTimestamp).unix() < moment(messages[i].createdAt).unix()) {
-//         console.log('removed', messages.splice(i, 1));
-//       }
-//     }
-//     return messages;
-//   }
-// };
-
 
 $(document).ready(function() {
   var chat = new ChatterBox();
@@ -130,14 +111,23 @@ $(document).ready(function() {
     var $messageInput = $('.textMessage input[type=text]');
     var msg = $messageInput.val();
 
-    if(chat.postMessage(chat.username, msg, 'hackreactor')) {
+    if(chat.postMessage(chat.username, msg, chat.room)) {
       $messageInput.val("");
     }
 
-
   });
 
+  $('.rooms').change(function(event) {
+    event.preventDefault();
+    console.log($(this).val());
+    chat.room = $(this).val();
+  });
 
+  $('.newRoom').submit(function(event) {
+    event.preventDefault();
+
+    chat.room = $(this).find('input').val();
+  });
 
   setInterval(function(){
     chat.roomDisplay();

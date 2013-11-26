@@ -40,8 +40,18 @@ body {
     width: 200px;
     background-color: #dedede;
     position: absolute;
-    top: 0;
+    top: 20px;
     right: 20px;
     padding: 10px;
     list-style: none;
+}
+
+.messageRoomName {
+    color: pink;
+}
+
+.newRoom {
+    position: absolute;
+    top: 40px;
+    right: 20px;
 }
