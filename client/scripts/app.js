@@ -2,22 +2,31 @@ var ChatterBox = function(){
   this.url = 'https://api.parse.com/1/classes/chatterbox';
   this.numMessages = 10;
   this.username = (prompt('What is your name?') || 'anonymous');
+  this.room = undefined;
 };
 
 ChatterBox.prototype.getMessages = function() {
   var that = this;
+  var query = {limit: this.numMessages, order: '-createdAt'};
+
+  if (this.room !== undefined) {
+    query['where'] = {roomname: this.room};
+  }
+
   $.ajax({
     url: this.url,
-    data: {limit: this.numMessages, order: '-createdAt'},
+    data: query,
     type: 'GET',
     success: function(data){
       that.messageDisplay(data.results);
+
     }
   });
 };
 
 ChatterBox.prototype.roomDisplay = function() {
   var that = this;
+
   $.ajax({
     url: this.url,
     data: {limit: 100, order: '-createdAt'},
@@ -34,9 +43,15 @@ ChatterBox.prototype.roomDisplay = function() {
       var results = [];
       $(Object.keys(rooms)).each(function(i, room){
         // $('.rooms').append('<li>' + room + '</li>');
-        results.push($('<li>' + room + '</li>'));
+        room = that.sanatize(room);
+        results.push($('<li><a href="#" class="roomLink" data-roomname="' + room + '">' + room + '</a></li>'));
       });
       $('.rooms').html(results);
+
+      $('.roomLink').on('click', function(event) {
+        event.preventDefault();
+        that.room = $(this).data('roomname');
+      });
     }
   });
 };
@@ -121,6 +136,8 @@ $(document).ready(function() {
 
 
   });
+
+
 
   setInterval(function(){
     chat.roomDisplay();
