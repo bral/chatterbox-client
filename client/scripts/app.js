@@ -3,6 +3,27 @@ var ChatterBox = function(){
   this.numMessages = 10;
   this.username = (prompt('What is your name?') || 'anonymous');
   this.room = undefined;
+  this.friends = {};
+  this.roomList = {};
+};
+
+ChatterBox.prototype.toggleFriend = function(username) {
+  if(username in this.friends) {
+    delete this.friends[username];
+  } else {
+    this.friends[username] = true;
+  }
+
+  this.friendAnnounce(username);
+  return true;
+};
+
+ChatterBox.prototype.friendAnnounce = function(friendName) {
+  if (friendName in this.friends) {
+    this.postMessage(this.username, friendName + " and " + this.username + " are now friendlies", this.room);
+  } else {
+    this.postMessage(this.username, friendName + " and " + this.username + " are no longer BFFs", this.room);
+  }
 };
 
 ChatterBox.prototype.getMessages = function() {
@@ -32,24 +53,14 @@ ChatterBox.prototype.roomDisplay = function() {
     data: {limit: 100, order: '-createdAt'},
     type: 'GET',
     success: function(data){
-      var rooms = {};
 
       _.each(data.results, function(message) {
-        // console.log(message);
-        rooms[message.roomname] = true;
+        if(!(message.roomname in that.roomList)) {
+          var room = that.sanatize(message.roomname);
+          that.roomList[room] = true;
+          $('.rooms').append('<option value="' + room + '">' + room + '</option>');
+        }
       });
-
-      // $('.rooms').append(Object.keys(room));
-      var results = [];
-      results.push($('<option value="">Select a room</option>'));
-      $(Object.keys(rooms)).each(function(i, room){
-        // $('.rooms').append('<li>' + room + '</li>');
-        room = that.sanatize(room);
-        results.push($('<option value="' + room + '">' + room + '</option>'));
-      });
-      $('.rooms').html(results);
-
-
     }
   });
 };
@@ -80,22 +91,33 @@ ChatterBox.prototype.messageDisplay = function(messages) {
 
   _.each(messages, function(message) {
 
-  results.push($('<div class="message">' +
-                  '<span class="username">' +
-                  that.sanatize(message.username) +
-                  '</span> ' +
-                  that.sanatize(message.text) +
-                  ' <span class="timeStamp" data-timestamp="' +
-                  message.updatedAt +
-                  '">' +
-                  moment(message.updatedAt).startOf('hour').fromNow() +
-                  '</span><span class="messageRoomName"> ' +
-                  that.sanatize(message.roomname) +
-                  '</span></div>'));
+    var classes = "username";
+    if(message.username in that.friends) {
+      classes += " friend";
+    }
+
+    results.push($('<div class="message">' +
+                    '<span class="' + classes + '">' +
+                    that.sanatize(message.username) +
+                    '</span> ' +
+                    that.sanatize(message.text) +
+                    ' <span class="timeStamp" data-timestamp="' +
+                    message.updatedAt +
+                    '">' +
+                    moment(message.updatedAt).startOf().fromNow() +
+                    '</span><span class="messageRoomName"> ' +
+                    that.sanatize(message.roomname) +
+                    '</span></div>'));
 
   });
 
   $('.messages').html(results);
+
+  // Add / remove friend
+  $('.username').on('click', function(event) {
+    event.preventDefault();
+    that.toggleFriend($(this).text());
+  });
 };
 
 ChatterBox.prototype.sanatize = function(string) {
@@ -119,7 +141,6 @@ $(document).ready(function() {
 
   $('.rooms').change(function(event) {
     event.preventDefault();
-    console.log($(this).val());
     chat.room = $(this).val();
   });
 
@@ -132,5 +153,5 @@ $(document).ready(function() {
   setInterval(function(){
     chat.roomDisplay();
     chat.getMessages();
-  }, 2000);
+  }, 1000);
 });

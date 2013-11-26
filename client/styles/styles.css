@@ -29,6 +29,7 @@ body {
 
 .username {
     font-weight: bold;
+    cursor: pointer;
 }
 
 .timeStamp {
@@ -36,7 +37,6 @@ body {
 }
 
 .rooms {
-    /*float: right;*/
     width: 200px;
     background-color: #dedede;
     position: absolute;
@@ -55,3 +55,31 @@ body {
     top: 40px;
     right: 20px;
 }
+
+.textBox {
+    width: 420px;
+    margin-bottom: 15px;
+    height: 25px;
+    font-size: 15px;
+    padding-left: 5px;
+}
+
+.submitButton {
+    height: 29px;
+    width: 50px;
+    border-radius: 2px;
+    background-color: #f0f0f0;
+    border: 1px solid black
+}
+
+.submitButton:hover {
+    background-color: #f0f0f9;
+}
+
+.friend {
+    background-color: yellow;
+}
+
+
+
+
