@@ -1,6 +1,7 @@
 var ChatterBox = function(){
   this.url = 'https://api.parse.com/1/classes/chatterbox';
   this.numMessages = 10;
+  this.username = (prompt('What is your name?') || 'anonymous');
 };
 
 ChatterBox.prototype.getMessages = function() {
@@ -10,8 +11,32 @@ ChatterBox.prototype.getMessages = function() {
     data: {limit: this.numMessages, order: '-createdAt'},
     type: 'GET',
     success: function(data){
-      // var messages = that.compareTime(data.results);
       that.messageDisplay(data.results);
+    }
+  });
+};
+
+ChatterBox.prototype.roomDisplay = function() {
+  var that = this;
+  $.ajax({
+    url: this.url,
+    data: {limit: 100, order: '-createdAt'},
+    type: 'GET',
+    success: function(data){
+      var rooms = {};
+
+      _.each(data.results, function(message) {
+        // console.log(message);
+        rooms[message.roomname] = true;
+      });
+
+      // $('.rooms').append(Object.keys(room));
+      var results = [];
+      $(Object.keys(rooms)).each(function(i, room){
+        // $('.rooms').append('<li>' + room + '</li>');
+        results.push($('<li>' + room + '</li>'));
+      });
+      $('.rooms').html(results);
     }
   });
 };
@@ -19,13 +44,16 @@ ChatterBox.prototype.getMessages = function() {
 ChatterBox.prototype.postMessage = function(username, message, roomname) {
   var that = this;
 
-  $.ajax({
+  return $.ajax({
     url: this.url,
     type: 'POST',
     contentType: 'application/json',
     data: JSON.stringify({username: username, text: message, roomname: roomname}),
     success: function(data){
-      console.log('Message posted');
+      return true;
+    },
+    error: function(){
+      return false;
     }
   });
 };
@@ -35,31 +63,23 @@ ChatterBox.prototype.messageDisplay = function(messages) {
 
   messages = messages.reverse();
 
-  // Get current oldest message
-  // var oldMessage = $('.messages').find('.message')[0];
-  // var oldTimestamp = $(oldMessage).find('.timeStamp').data('timestamp');
-  // console.log(oldMessage);
-
   var results = [];
 
   _.each(messages, function(message) {
 
-    // if(oldTimestamp > message.updatedAt) {
-      results.push($('<div class="message">' +
-                      '<span class="username">' +
-                      that.sanatize(message.username) +
-                      '</span> ' +
-                      that.sanatize(message.text) +
-                      ' <span class="timeStamp" data-timestamp="' +
-                      message.updatedAt +
-                      '">' +
-                      moment(message.updatedAt).startOf('hour').fromNow() +
-                      '</span></div>'));
-    // }
+  results.push($('<div class="message">' +
+                  '<span class="username">' +
+                  that.sanatize(message.username) +
+                  '</span> ' +
+                  that.sanatize(message.text) +
+                  ' <span class="timeStamp" data-timestamp="' +
+                  message.updatedAt +
+                  '">' +
+                  moment(message.updatedAt).startOf('hour').fromNow() +
+                  '</span></div>'));
+
   });
 
-  // console.log(results);
-  console.log('updating');
   $('.messages').html(results);
 };
 
@@ -90,7 +110,20 @@ ChatterBox.prototype.sanatize = function(string) {
 $(document).ready(function() {
   var chat = new ChatterBox();
 
+  $('.textMessage').submit(function(event){
+    event.preventDefault();
+    var $messageInput = $('.textMessage input[type=text]');
+    var msg = $messageInput.val();
+
+    if(chat.postMessage(chat.username, msg, 'hackreactor')) {
+      $messageInput.val("");
+    }
+
+
+  });
+
   setInterval(function(){
+    chat.roomDisplay();
     chat.getMessages();
   }, 2000);
 });
