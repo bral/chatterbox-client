@@ -13,7 +13,7 @@
 
     <!-- internal javascript -->
     <script src="scripts/config.js"></script>
-    <!-- // <script src="scripts/app.js"></script> -->
+    <script src="scripts/app.js"></script>
   </head>
   <body>
 
@@ -32,16 +32,6 @@
         <button class="roomButton">Make Room</button>
       </form>
     </div>
-
-    <script type="text/template" id="messageViewTemplate">
-      <div class="message">
-        <span class="username"><%- username %></span> <%- text %>
-        <span class="timeStamp" data-timestamp="<%- updatedAt %>"><%= moment(updatedAt).startOf().fromNow()%> </span>
-        <span class="messageRoomName"><%- roomname %></span>
-      </div>
-    </script>
-
-    <script src="scripts/backbone-app.js"></script>
 
   </body>
 </html>
