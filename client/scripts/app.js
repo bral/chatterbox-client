@@ -7,6 +7,16 @@ var ChatterBox = function(){
   this.roomList = {};
 };
 
+ChatterBox.prototype.ajax = function(options) {
+  $.ajax({
+    url: options.url,
+    data: options.data,
+    type: options.type,
+    contentType: options.contentType,
+    success: options.success
+  });
+};
+
 ChatterBox.prototype.toggleFriend = function(username) {
   if(username in this.friends) {
     delete this.friends[username];
@@ -34,22 +44,31 @@ ChatterBox.prototype.getMessages = function() {
     query['where'] = {roomname: this.room};
   }
 
-  $.ajax({
-    url: this.url,
+  this.ajax({
+    url: that.url,
     data: query,
     type: 'GET',
     success: function(data){
       that.messageDisplay(data.results);
-
     }
   });
+
+  // $.ajax({
+  //   url: this.url,
+  //   data: query,
+  //   type: 'GET',
+  //   success: function(data){
+  //     that.messageDisplay(data.results);
+
+  //   }
+  // });
 };
 
 ChatterBox.prototype.roomDisplay = function() {
   var that = this;
 
-  $.ajax({
-    url: this.url,
+  this.ajax({
+    url: that.url,
     data: {limit: 100, order: '-createdAt'},
     type: 'GET',
     success: function(data){
@@ -68,8 +87,8 @@ ChatterBox.prototype.roomDisplay = function() {
 ChatterBox.prototype.postMessage = function(username, message, roomname) {
   var that = this;
 
-  return $.ajax({
-    url: this.url,
+  return this.ajax({
+    url: that.url,
     type: 'POST',
     contentType: 'application/json',
     data: JSON.stringify({username: username, text: message, roomname: roomname}),
